@@ -31,7 +31,7 @@ in agreement for a booking to make sense?
     
     InMemoryStore: Doesn't reference or own any.
     
-    BookingPolicy: Doesn't reference or get referenced by anything.
+    BookingPolicy: Doesn't reference or get referenced by anything. 
 
 **The no-double-booking invariant.** Where is it enforced? Name every place a check
 happens, say what each one actually checks, and trace one reschedule request through the
@@ -59,18 +59,31 @@ Two problems. For each one, fill in all three parts.
 **The problem.** Name it, using the vocabulary from lecture (milestone 2 in the
 handout names the three).
 
+    Representational Gap
+
 **Where in the code.** File and method.
+
+    In InMemoryStore, fields slotsByRoomDate and bookerBySlot and the method addSlot.
 
 **What it makes expensive.** A concrete future change, or something that already goes
 wrong today. What breaks first?
+
+    Adding a new property to a booking would be expensive because right now, it is just primitive data across multiple HashMaps with a string key. To add a new property, you would have to create a new map, update addSlot to accept a new parameter, and update addSlot to keep the maps in sync.
 
 ### Problem 2
 
 **The problem.**
 
+    Misplaced Responsibility
+
 **Where in the code.**
 
+    In RequestHandler, methods createBooking and rescheduleBooking.
+
 **What it makes expensive.**
+
+    RequestHandler is responsible for receiving requests, parsing time formats, and enforcing policies like checking for overlaps. It would be better if the logic aspect of enforcing policies was separate. This also makes some future changes more expensive. For example, if you wanted to change the way the input was formatted, like changing from HH:MM to some other string format with possibly more details, you would have to rewrite the overlap logic.
+    This problem also reveals itself in rescheduleBooking, where this policy enforcement logic is actually missing. As a result, rescheduleBooking allows for double booking. This would be a more manageable issue if the logic were separate, as the fix to this would be something similar to copy pasting all the logic again into this method.
 
 ---
 
