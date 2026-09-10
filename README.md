@@ -1,4 +1,5 @@
 # Lab 3 Starter: RoomReserve
+Tools/Models: Antigravity, Gemini Pro
 
 RoomReserve is a small room-reservation service. Callers create, cancel, reschedule,
 and list bookings for a room on a day. It ships with a design document, about 300 lines
