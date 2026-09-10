@@ -94,19 +94,35 @@ list of local code fixes. Read the handout's appendix before writing this sectio
 
 ### Alternative A
 
+    Object-oriented room model
+
 **The decomposition.** What are the pieces, what does each own, and where do the rules
 live?
+
+    Create a Room class. The Room object now handles its own schedule and its own specific rules, which could help with things like differing business hours for each room. The RequestHandler now parses incoming strings, looks up the specific Room object, and calls a method from the Room class. This means the Room class is now responsible for checking the no double-booking invariant itself.
 
 **One tradeoff.** Something this option actually costs. "No real downside" is not a
 tradeoff.
 
+    If you need to return something like "list every user who has booked a room today", it would become much more expensive. The global database made it easier to answer questions like these, but having Room objects means you would have to loop through every object and ask it for its schedule.
+
 ### Alternative B
+
+    Create a class for the logic
 
 **The decomposition.**
 
+    Booking would be turned into a container for properties with no logic. InMemoryStore would also just save whatever it's told to. All the logic would be moved into a new class. RequestHandler would parse strings and call this new class. The new class would pull the day's bookings, run all the rules, and write the new booking if everything passes.
+
 **One tradeoff.**
+
+    Because InMemoryStore now doesn't have logic, it doesn't check the invariants anymore. This means that a future method that talks directly to InMemoryStore, and not to the new class, could cause issues like double-booking.
 
 ### Preference
 
 Which one, and under what conditions? Say what the choice depends on, and what would
 make you pick the other one instead.
+
+    I prefer Alternative A (Room objects) under the condition that we need separate rules for each room. By having this system, we could easily create rules for each room without the clutter we would have if we used a global system.
+    
+    I would pick Alternative B (Logic class) if we needed to enforce rules that check multiple rooms. For example, if we had some rule that prevented a user from booking more than 3 rooms per week, then it would be far easier to check this with all the logic in one place rather than through all the individual rooms. Alternative B would also be more organized because the logic is now completely separate from the storage.
