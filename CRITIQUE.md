@@ -12,13 +12,41 @@ Describe the system as the code actually builds it.
 **Data model.** What is a booking, in the code? What types hold it, and what has to stay
 in agreement for a booking to make sense?
 
+    A booking is a time slot represented as a long[] array containing [startMinute, endMinute].
+    
+    Bookings are held by two Map structures: slotsByRoomDate, which is Map<String, List<Long[]>> where the key is "roomId|date"; bookerBySlot, which is Map<String, String> where the key is "roomId|date|startMinute|endMinute".
+
+    The two maps must stay in agreement for the booking to make sense. The same room, date, start, and end times must match in the slotsByRoomDate list and bookerBySlot map.
+
 **Operations.** What can a caller do, and what goes in and out?
 
+    A caller can use createBooking, cancelBooking, rescheduleBooking, and listBookings.
+    Inputs are strings (room ,date, start time, end time, user). Outputs are also strings (success, error, or list of bookings).
+
 **Structure.** What classes exist, what does each own, and who holds a reference to whom?
+
+    ReservationApp: This holds a reference to RequestHandler.
+    
+    RequestHandler: This owns and holds a reference to InMemoryStore.
+    
+    InMemoryStore: Doesn't reference or own any.
+    
+    BookingPolicy: Doesn't reference or get referenced by anything.
 
 **The no-double-booking invariant.** Where is it enforced? Name every place a check
 happens, say what each one actually checks, and trace one reschedule request through the
 code from the entry point to storage.
+
+    In RequestHandler.java (L31-36): It iterates through existing slots and checks for overlaps with the one being created.
+    In InMemoryStore.java (L23-27): This somewhat enforces the invariant, but it only looks for exact duplicates, not partial overlaps.
+    
+    Trace: 
+    RequestHandler.rescheduleBooking receives the string arguments.
+    It turns the old and new string times into long minutes.
+    It checks that the new end time is after the new start time.
+    It retrieves the user associated with the old booking.
+    It removes the old time slot in InMemoryStore.
+    It adds the new time slot in InMemoryStore.
 
 ---
 
